@@ -1,0 +1,25 @@
+# dependencies
+node_modules
+
+# env files
+.env
+
+# logs
+logs
+*.log
+
+# build folders
+dist
+build
+
+# vite
+.vite
+
+# OS files
+.DS_Store
+
+# coverage
+coverage
+
+# redis dump
+dump.rdb
