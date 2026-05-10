@@ -1,22 +1,30 @@
-import axios from "axios";
+import axiosInstance from "../api/axios";
 
-const BASE_URL = "https://dummyjson.com";
+export const getProducts = async ({
+  page = 1,
+  limit = 12,
+  search = "",
+  category = "",
+  maxPrice = 5000,
+  sort = "newest",
+  inStock = false,
+}) => {
 
-export const getProducts = async () => {
-  const response = await axios.get(
-    `${BASE_URL}/products`
-  );
+  const response =
+    await axiosInstance.get(
+      "/products",
+      {
+        params: {
+          page,
+          limit,
+          search,
+          category,
+          maxPrice,
+          sort,
+          inStock,
+        },
+      }
+    );
 
-  const products = response.data.products;
-
-  return products.map((product) => ({
-    id: product.id,
-    title: product.title,
-    description: product.description,
-    price: product.price,
-    category: product.category,
-    brand: product.brand,
-    stock: product.stock,
-    thumbnail: product.thumbnail,
-  }));
+  return response.data;
 };

@@ -45,7 +45,6 @@ axiosInstance.interceptors.response.use(
 
   // ERROR
   async (error) => {
-    debugger
     const originalRequest =
       error.config;
 
@@ -102,8 +101,7 @@ axiosInstance.interceptors.response.use(
               refreshToken,
             }
           );
-         debugger
-        // GET NEW TOKENS
+         // GET NEW TOKENS
         const {
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
@@ -161,10 +159,6 @@ axiosInstance.interceptors.response.use(
       !isRefreshRequest &&
       error.response?.data?.message
     ) {
-
-      toast.error(
-        error.response.data.message
-      );
     }
 
     return Promise.reject(error);
