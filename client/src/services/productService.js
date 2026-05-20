@@ -28,3 +28,11 @@ export const getProducts = async ({
 
   return response.data;
 };
+
+// get a single product
+export const getProductById=async(id)=>{
+  const response = await axiosInstance.get(
+    `/products/${id}`
+  )
+  return response.data;
+}

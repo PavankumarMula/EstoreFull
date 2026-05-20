@@ -68,13 +68,15 @@ function FilterSidebar({
 
   return (
 
-    <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 sticky top-24">
+    /* CHANGED: Swapped flat bg-white for a soft slate backdrop, darkened outer border, and enhanced shadows */
+    <div className="bg-slate-50/90 backdrop-blur-sm p-5 rounded-2xl shadow-md border border-slate-300 sticky top-24">
 
       {/* HEADER */}
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-200">
 
-        <h2 className="text-2xl font-bold">
+        {/* CHANGED: Boosted header text to absolute dark slate for heavy contrast */}
+        <h2 className="text-2xl font-bold text-slate-900">
           Filters
         </h2>
 
@@ -90,7 +92,8 @@ function FilterSidebar({
               inStock: false,
             })
           }
-          className="text-sm text-slate-500 hover:text-black"
+          /* CHANGED: Made reset button darker slate and gave it a high-contrast indigo hover state */
+          className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors"
         >
           Reset
         </button>
@@ -102,13 +105,15 @@ function FilterSidebar({
 
       <div className="mb-8">
 
-        <h3 className="font-semibold mb-3">
+        {/* CHANGED: Darkened label contrast */}
+        <h3 className="font-semibold text-slate-900 mb-3">
           Search
         </h3>
 
         <div className="relative">
 
-          <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+          {/* CHANGED: Darkened icon color slightly to make it legible */}
+          <Search className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
 
           <Input
             placeholder="Search products..."
@@ -120,7 +125,8 @@ function FilterSidebar({
                 page: 1,
               }))
             }
-            className="pl-9"
+            /* CHANGED: Forced bright white background input against the soft gray sidebar, crisp border, dark text */
+            className="pl-9 bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus-visible:ring-indigo-500"
           />
 
         </div>
@@ -132,7 +138,8 @@ function FilterSidebar({
 
       <div className="mb-8">
 
-        <h3 className="font-semibold mb-4">
+        {/* CHANGED: Darkened label contrast */}
+        <h3 className="font-semibold text-slate-900 mb-4">
           Categories
         </h3>
 
@@ -147,50 +154,57 @@ function FilterSidebar({
               e.target.value
             )
           }
-          className="mb-4"
+          /* CHANGED: White background input, sharp slate boundary, dark inner text */
+          className="mb-4 bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus-visible:ring-indigo-500"
         />
 
 
         {/* SCROLLABLE AREA */}
 
-        <ScrollArea className="h-52 pr-3">
+        {/* CHANGED: Framed the categories scroll window onto a crisp, solid white panel layer */}
+        <ScrollArea className="h-52 pr-3 bg-white border border-slate-200 rounded-xl p-3">
 
           <div className="space-y-3">
 
             {filteredCategories.map(
-              (category) => (
+              (category) => {
+                const isChecked = filters.category === category.name;
+                return (
+                  <label
+                    key={category._id}
+                    /* CHANGED: Added dynamic highlighted background color panel when the option is selected */
+                    className={`flex items-center gap-3 p-1.5 rounded-lg cursor-pointer transition-colors ${
+                      isChecked ? "bg-indigo-50" : "hover:bg-slate-50"
+                    }`}
+                  >
 
-                <label
-                  key={category._id}
-                  className="flex items-center gap-3 cursor-pointer"
-                >
+                    <Checkbox
+                      checked={isChecked}
+                      onCheckedChange={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          category:
+                            prev.category ===
+                            category.name
+                              ? ""
+                              : category.name,
+                          page: 1,
+                        }))
+                      }
+                      /* CHANGED: Made unselected state border darker slate, filled checked state with brand indigo */
+                      className="border-slate-400 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                    />
 
-                  <Checkbox
-                    checked={
-                      filters.category ===
-                      category.name
-                    }
-                    onCheckedChange={() =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        category:
-                          prev.category ===
-                          category.name
-                            ? ""
-                            : category.name,
-                        page: 1,
-                      }))
-                    }
-                  />
+                    {/* CHANGED: Text turns dark blue/indigo and bold if active, deep slate if inactive */}
+                    <span className={`capitalize text-sm font-medium ${
+                      isChecked ? "text-indigo-900 font-bold" : "text-slate-700"
+                    }`}>
+                      {category.name}
+                    </span>
 
-                  <span className="capitalize text-sm text-slate-700">
-
-                    {category.name}
-
-                  </span>
-
-                </label>
-              )
+                  </label>
+                );
+              }
             )}
 
           </div>
@@ -202,19 +216,20 @@ function FilterSidebar({
 
       {/* PRICE */}
 
-      <div className="mb-8">
+      {/* CHANGED: Encased the slider section in its own distinctive white panel to break up contrast */}
+      <div className="mb-8 bg-white p-3.5 rounded-xl border border-slate-200">
 
         <div className="flex items-center justify-between mb-4">
 
-          <h3 className="font-semibold">
+          {/* CHANGED: Darkened label contrast */}
+          <h3 className="font-semibold text-slate-900">
             Max Price
           </h3>
 
-          <span className="text-sm text-slate-500">
-
+          {/* CHANGED: Turned values into a clear high-contrast display badge */}
+          <span className="text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 px-2 py-0.5 rounded-md">
             $
             {filters.maxPrice}
-
           </span>
 
         </div>
@@ -230,6 +245,8 @@ function FilterSidebar({
               page: 1,
             }))
           }
+          /* CHANGED: Injected indigo color keys directly into shadcn style tokens */
+          className="py-1 [&_[role=slider]]:bg-indigo-600 [&_[role=slider]]:border-indigo-600"
         />
 
       </div>
@@ -239,7 +256,8 @@ function FilterSidebar({
 
       <div className="mb-8">
 
-        <h3 className="font-semibold mb-4">
+        {/* CHANGED: Darkened label contrast */}
+        <h3 className="font-semibold text-slate-900 mb-4">
           Sort By
         </h3>
 
@@ -254,13 +272,15 @@ function FilterSidebar({
           }
         >
 
-          <SelectTrigger>
+          {/* CHANGED: Re-styled native trigger values to be deep text on solid background */}
+          <SelectTrigger className="bg-white border-slate-300 text-slate-900 font-medium focus:ring-indigo-500">
 
             <SelectValue />
 
           </SelectTrigger>
 
-          <SelectContent>
+          {/* CHANGED: Hardened dropdown contents definitions */}
+          <SelectContent className="bg-white border-slate-200 text-slate-900 font-medium">
 
             <SelectItem value="newest">
               Newest
@@ -287,9 +307,10 @@ function FilterSidebar({
 
       {/* STOCK */}
 
-      <div>
+      {/* CHANGED: Added a separate divider line at the footer layout block */}
+      <div className="pt-2 border-t border-slate-200">
 
-        <label className="flex items-center gap-3 cursor-pointer">
+        <label className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors group">
 
           <Checkbox
             checked={filters.inStock}
@@ -303,9 +324,12 @@ function FilterSidebar({
                 page: 1,
               }))
             }
+            /* CHANGED: Made check track clearer, popping indigo when selected */
+            className="border-slate-400 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
           />
 
-          <span className="text-sm">
+          {/* CHANGED: Darkened stock filter text context and added a hover jump state */}
+          <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
             In Stock Only
           </span>
 

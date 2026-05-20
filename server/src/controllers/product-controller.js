@@ -302,8 +302,7 @@ module.exports = {
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Fetch product from the database by ID (replace with actual DB query)
+     // id is a mongo id can be accessed using req.params.id but fetch using mongo ? somthing like ObjectId(req.params.id) or can be directly used as mongoose will handle it
     const product = await Product.findById(id);
 
     if (!product) {

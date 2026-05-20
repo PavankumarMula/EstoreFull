@@ -6,12 +6,12 @@ const bcrypt = require('bcrypt');
 const User = require("../models/user-model");
 
 const generateTokens = async (user) => {
-    const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1m' });
-    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '2m' });
+    const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
 
     // store refresh token in redis with user id as key
     await redisClient.set(user._id.toString(), refreshToken, {
-        EX: 2 * 60, // expire in 2 minutes
+        EX: 7 * 24 * 60 * 60, // expire in 7 days
     });
 
     return { accessToken, refreshToken };
