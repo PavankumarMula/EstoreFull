@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGetProductById } from "../hooks/productHook";
+import { useAddToCart, useGetCart } from "../hooks/cartHook";
+import {
+  useQueryClient,
+} from "@tanstack/react-query";
+import { toast } from 'sonner'
 
 function ProductDetail() {
   const { id } = useParams();
   const { data: product, isLoading, isError } = useGetProductById(id);
-  
+  const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
+  const { data: cart } = useGetCart();
+  const queryClient = useQueryClient();
+
   // State to track which image is currently selected in the viewer
   const [activeImage, setActiveImage] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(1); // Default to 1 or the current cart quantity for this product if it exists  
 
   // Update the main image once the product data successfully loads
   useEffect(() => {
@@ -18,6 +26,34 @@ function ProductDetail() {
       setActiveImage(product.images[0]);
     }
   }, [product]);
+
+  const addToCartHandler =
+    () => {
+
+      addToCart(
+        {
+          productId:
+            product._id,
+
+          quantity,
+        },
+        {
+          onSuccess: () => {
+            toast.success(
+              "Added to cart"
+            );
+            queryClient.invalidateQueries({
+              queryKey: ["cart"],
+            });
+          },
+          onError: () => {
+            toast.error(
+              "Failed to add to cart. Please try again."
+            );
+          },  
+        }
+      );
+    };
 
   if (isLoading) {
     return (
@@ -55,14 +91,14 @@ function ProductDetail() {
 
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 bg-white rounded-xl shadow-sm p-6 sm:p-8">
-        
+
         {/* Left Column: Media Gallery */}
         <div className="flex flex-col gap-4">
           {/* Main Visual Display */}
           <div className="w-full aspect-square bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center border border-gray-100">
-            <img 
-              src={activeImage} 
-              alt={product.title} 
+            <img
+              src={activeImage}
+              alt={product.title}
               className="max-h-full max-w-full object-contain p-4 transition-all duration-300"
             />
           </div>
@@ -73,23 +109,22 @@ function ProductDetail() {
               {/* Include Thumbnail as an option if present */}
               {product.thumbnail && (
                 <button
+
                   onClick={() => setActiveImage(product.thumbnail)}
-                  className={`w-20 h-20 flex-shrink-0 border-2 rounded-md overflow-hidden bg-gray-50 p-1 transition ${
-                    activeImage === product.thumbnail ? "border-blue-600 shadow-sm" : "border-gray-200 opacity-70 hover:opacity-100"
-                  }`}
+                  className={`w-20 h-20 flex-shrink-0 border-2 rounded-md overflow-hidden bg-gray-50 p-1 transition ${activeImage === product.thumbnail ? "border-blue-600 shadow-sm" : "border-gray-200 opacity-70 hover:opacity-100"
+                    }`}
                 >
                   <img src={product.thumbnail} alt="Main thumbnail" className="w-full h-full object-contain" />
                 </button>
               )}
-              
+
               {/* Array Images loop */}
               {product.images.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveImage(img)}
-                  className={`w-20 h-20 flex-shrink-0 border-2 rounded-md overflow-hidden bg-gray-50 p-1 transition ${
-                    activeImage === img ? "border-blue-600 shadow-sm" : "border-gray-200 opacity-70 hover:opacity-100"
-                  }`}
+                  className={`w-20 h-20 flex-shrink-0 border-2 rounded-md overflow-hidden bg-gray-50 p-1 transition ${activeImage === img ? "border-blue-600 shadow-sm" : "border-gray-200 opacity-70 hover:opacity-100"
+                    }`}
                 >
                   <img src={img} alt={`${product.title} view ${idx + 1}`} className="w-full h-full object-contain" />
                 </button>
@@ -149,7 +184,7 @@ function ProductDetail() {
               <p className="text-xs text-gray-400 mt-1">Local taxes and shipping calculated at checkout.</p>
             </div>
 
-         {/* Detailed Description Paragraph */}
+            {/* Detailed Description Paragraph */}
             <div className="mb-6">
               <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-2">Description</h3>
               <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
@@ -160,13 +195,14 @@ function ProductDetail() {
 
           {/* Action Interactive Elements */}
           <div className="mt-6 pt-6 border-t border-gray-100 flex flex-col gap-4">
-            
+
             {/* Quantity Selector Selector Row */}
             {product.stock > 0 && (
               <div className="flex items-center gap-4">
                 <span className="text-sm font-bold uppercase tracking-wider text-gray-500">Quantity:</span>
                 <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 shadow-sm">
-                  <button 
+                  <button
+
                     onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
                     disabled={quantity <= 1}
                     className="px-3 py-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed font-bold transition"
@@ -176,7 +212,7 @@ function ProductDetail() {
                   <span className="px-4 py-2 text-gray-800 font-semibold min-w-[40px] text-center bg-white border-x border-gray-200">
                     {quantity}
                   </span>
-                  <button 
+                  <button
                     onClick={() => setQuantity(prev => Math.min(product.stock, prev + 1))}
                     disabled={quantity >= product.stock}
                     className="px-3 py-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed font-bold transition"
@@ -189,15 +225,19 @@ function ProductDetail() {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <button 
+              <button
                 disabled={product.stock <= 0}
-                onClick={() => console.log(`Adding ${quantity} item(s) to cart`)}
+                onClick={addToCartHandler}
                 className="flex-1 bg-blue-600 text-white text-center py-3 px-6 rounded-lg font-semibold shadow-sm hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition"
               >
-                Add to Cart
+                {
+                  isAddingToCart
+                    ? "Adding..."
+                    : "Add to Cart"
+                }
               </button>
-              <button 
-                disabled={product.stock <= 0}
+              <button
+                disabled={product.stock <= 0 || isAddingToCart}
                 onClick={() => console.log(`Proceeding to checkout with ${quantity} item(s)`)}
                 className="flex-1 bg-gray-900 text-white text-center py-3 px-6 rounded-lg font-semibold shadow-sm hover:bg-black disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition"
               >

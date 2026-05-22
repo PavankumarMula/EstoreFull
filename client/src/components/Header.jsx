@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { ShoppingCart, LogOut, Search, User } from "lucide-react";
 import { useAuth } from "../contexts/authContext";
+import { useGetCart } from "../hooks/cartHook";
 
 // Shadcn UI Components
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
+
 function Header() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { data: cart } = useGetCart();
+  console.log("Cart data in Header:", cart); // Debugging line to check cart data
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -57,7 +61,7 @@ function Header() {
               <Button variant="outline" size="icon" className="relative rounded-full">
                 <ShoppingCart className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
-                  2
+                  {cart?.summary?.totalItems|| 0}
                 </span>
               </Button>
 
