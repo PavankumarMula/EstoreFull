@@ -15,6 +15,7 @@ const authRoutes = require('./src/routes/auth-route');
 const productRoutes = require('./src/routes/product-route');
 const categoryRoutes = require('./src/routes/category-route');
 const cartRoutes = require('./src/routes/cart-route');
+const orderRoutes = require("./src/routes/order-route");
 const authMiddleware = require("./src/middlewares/auth-middleware");
 
 app.use(express.json());
@@ -38,6 +39,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 // add middle ware
 app.use("/api/cart", authMiddleware, cartRoutes);
+app.use("/api/order",authMiddleware,orderRoutes);
 
 const PORT = process.env.PORT || 5000;
 

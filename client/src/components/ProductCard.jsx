@@ -90,7 +90,13 @@ function ProductCard({ product }) {
 
           {/* BUTTON */}
 
-          <button className="bg-slate-900 hover:bg-black text-white text-sm font-medium px-4 py-2 rounded-xl transition">
+          <button className="bg-slate-900 hover:bg-black text-white text-sm font-medium px-4 py-2 rounded-xl transition" onClick={(e) => {
+
+            e.stopPropagation(); // Prevent card click
+
+            productDetailHandler(); // Navigate to product detail
+
+          }}>
 
             Add
 

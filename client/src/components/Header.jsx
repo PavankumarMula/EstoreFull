@@ -58,11 +58,13 @@ function Header() {
           ) : (
             <div className="flex items-center gap-4">
               {/* Cart Button */}
-              <Button variant="outline" size="icon" className="relative rounded-full">
-                <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
-                  {cart?.summary?.totalItems|| 0}
-                </span>
+              <Button variant="outline" size="icon" className="relative rounded-full" asChild>
+                <Link to="/cart">
+                  <ShoppingCart className="h-5 w-5" />
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
+                    {cart?.summary?.totalItems|| 0}
+                  </span>
+                </Link>
               </Button>
 
               {/* Profile Dropdown */}

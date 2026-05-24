@@ -33,12 +33,12 @@ export const useAddToCart =
 };
 
 
-// UPDATE CART ITEM
+// UPDATE CART ITEM QUANTITY (INCREMENT/DECREMENT)
 export const useUpdateCartItem =
   () => {
 
     return useMutation({
-      mutationFn:
+      mutationFn: 
         updateCartItem,
     });
 };
