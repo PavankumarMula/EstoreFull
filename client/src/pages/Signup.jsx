@@ -1,29 +1,29 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import {useCreateUser} from "../hooks/userHook";
-
+import { useCreateUser } from "../hooks/userHook";
 
 function SignUpPage() {
-
   const [formstate, setFormState] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    isAdmin: false, // Added state for the admin tick
   });
 
   const { mutate, isPending, error, isSuccess } = useCreateUser();
-
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+    
     setFormState(prev => ({
       ...prev,
-      [name]: value
-    }))
-  }
+      // If it's a checkbox, use the 'checked' boolean instead of 'value'
+      [name]: type === "checkbox" ? checked : value
+    }));
+  };
 
   // validateForm 
   const validateForm = () => {
@@ -74,58 +74,44 @@ function SignUpPage() {
 
     setErrors({});
 
-   mutate(
-  {
-    name: formstate.name,
-    email: formstate.email,
-    password: formstate.password,
-  },
-  {
-    onSuccess: () => {
-      toast.success(
-        "Account created successfully"
-      );
-    },
+    // Construct the payload dynamically based on the checkbox state
+    const payload = {
+      name: formstate.name,
+      email: formstate.email,
+      password: formstate.password,
+      role: formstate.isAdmin ? "admin" : "user", // Converts true/false to "admin"/"user"
+    };
 
-    onError: () => {
-      toast.error(
-        "Failed to create account"
-      );
-    },
-  }
-);
-  }
-
+    mutate(payload, {
+      onSuccess: () => {
+        toast.success("Account created successfully");
+      },
+      onError: (err) => {
+        toast.error(
+          err?.response?.data?.message || "Failed to create account"
+        );
+      },
+    });
+  };
 
   return (
     <div className="flex items-center justify-center min-h-[85vh]">
-
       <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-lg border border-slate-200">
-
         <div className="mb-8 text-center">
-
           <h1 className="text-3xl font-bold text-slate-900 mb-2">
             Create Account
           </h1>
-
           <p className="text-slate-500">
             Sign up to start shopping
           </p>
-
         </div>
 
-        <form
-          className="space-y-5"
-          onSubmit={handleSubmit}
-        >
-
+        <form className="space-y-5" onSubmit={handleSubmit}>
           {/* Name */}
           <div>
-
             <label className="block mb-2 font-medium text-slate-700">
               Name
             </label>
-
             <input
               type="text"
               placeholder="Enter your name"
@@ -134,22 +120,16 @@ function SignUpPage() {
               value={formstate.name}
               onChange={handleChange}
             />
-
             {errors.name && (
-              <p className="text-red-500 text-sm mt-2">
-                {errors.name}
-              </p>
+              <p className="text-red-500 text-sm mt-2">{errors.name}</p>
             )}
-
           </div>
 
           {/* Email */}
           <div>
-
             <label className="block mb-2 font-medium text-slate-700">
               Email
             </label>
-
             <input
               type="email"
               placeholder="Enter your email"
@@ -158,22 +138,16 @@ function SignUpPage() {
               onChange={handleChange}
               className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-black transition"
             />
-
             {errors.email && (
-              <p className="text-red-500 text-sm mt-2">
-                {errors.email}
-              </p>
+              <p className="text-red-500 text-sm mt-2">{errors.email}</p>
             )}
-
           </div>
 
           {/* Password */}
           <div>
-
             <label className="block mb-2 font-medium text-slate-700">
               Password
             </label>
-
             <input
               type="password"
               name="password"
@@ -182,22 +156,16 @@ function SignUpPage() {
               placeholder="Enter your password"
               className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-black transition"
             />
-
             {errors.password && (
-              <p className="text-red-500 text-sm mt-2">
-                {errors.password}
-              </p>
+              <p className="text-red-500 text-sm mt-2">{errors.password}</p>
             )}
-
           </div>
 
           {/* Confirm Password */}
           <div>
-
             <label className="block mb-2 font-medium text-slate-700">
               Confirm Password
             </label>
-
             <input
               type="password"
               name="confirmPassword"
@@ -206,13 +174,27 @@ function SignUpPage() {
               placeholder="Confirm your password"
               className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-black transition"
             />
-
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-2">
-                {errors.confirmPassword}
-              </p>
+              <p className="text-red-500 text-sm mt-2">{errors.confirmPassword}</p>
             )}
+          </div>
 
+          {/* Is Admin Checkbox (Tick) */}
+          <div className="flex items-center space-x-3 pt-1">
+            <input
+              type="checkbox"
+              id="isAdmin"
+              name="isAdmin"
+              checked={formstate.isAdmin}
+              onChange={handleChange}
+              className="h-5 w-5 rounded border-slate-300 text-black focus:ring-black accent-black cursor-pointer"
+            />
+            <label 
+              htmlFor="isAdmin" 
+              className="text-sm font-medium text-slate-700 cursor-pointer select-none"
+            >
+              Sign up as an Administrator
+            </label>
           </div>
 
           {/* Submit */}
@@ -223,22 +205,14 @@ function SignUpPage() {
           >
             {isPending ? "Creating Account..." : "Sign Up"}
           </button>
-
         </form>
 
         <p className="text-center mt-6 text-slate-600">
-
           Already have an account?{" "}
-
-          <Link
-            to="/signin"
-            className="text-black font-semibold hover:underline"
-          >
+          <Link to="/signin" className="text-black font-semibold hover:underline">
             Sign In
           </Link>
-
         </p>
-
       </div>
     </div>
   );

@@ -7,6 +7,9 @@ import {
   createOrder,
   getOrderDetails,
   getOrderHistory,
+  cancelOrder,
+  getAdminOrders,
+  updateOrderStatusForAdmin,
 } from "../services/orderService";
 
 
@@ -36,3 +39,25 @@ export const usecreateOrder =
       mutationFn: createOrder,
     });
 };
+
+// cancel order
+export const useCancelOrder =
+  () => {
+    return useMutation({
+      mutationFn: cancelOrder,
+    });
+};
+
+export const useGetAdminOrders = (params) => {
+    return useQuery({
+        queryKey: ["admin-orders", params],
+        queryFn: () => getAdminOrders(params),
+    });
+};
+
+export const useUpdateOrderStatusForAdmin = () => {
+    return useMutation({
+        mutationFn: updateOrderStatusForAdmin,
+    });
+};
+

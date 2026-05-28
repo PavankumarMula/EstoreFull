@@ -10,21 +10,95 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate, useParams } from "react-router-dom";
-import { useGetOrderDetails } from "../hooks/orderHook";
+import { useGetOrderDetails, useCancelOrder } from "../hooks/orderHook";
+import { toast } from "sonner";
 
+// ==========================================
+// CANCEL ORDER DIALOG COMPONENT (SHADCN)
+// ==========================================
+export function CancelOrderButton({ order, cancelOrderMutation, navigate }) {
+  const isPending = cancelOrderMutation.isPending;
+
+  const handleCancelOrder = () => {
+    cancelOrderMutation.mutate(order._id, {
+      onSuccess: () => {
+        toast.success("Order cancelled successfully.");
+        navigate('/orders-history');
+      },
+      onError: (err) => {
+        toast.error(err?.response?.data?.message || "Failed to cancel the order. Please try again.");
+      }
+    });
+  };
+
+  return (
+    <AlertDialog>
+      {/* Triggering action wrapper button */}
+      <AlertDialogTrigger asChild>
+        <Button 
+          variant="destructive" 
+          className="w-full gap-2 h-11 shadow-sm transition-all" 
+          disabled={isPending}
+        >
+          <AlertCircle className="h-4 w-4" /> 
+          {isPending ? "Processing Request..." : "Cancel This Order"}
+        </Button>
+      </AlertDialogTrigger>
+
+      {/* Accessible Modal Overlay Configuration */}
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently cancel your order, release product allocations, and initiate any applicable refunds.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isPending}>Go Back</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              // Keeps modal alive while backend mutation executes asynchronously 
+              e.preventDefault();
+              handleCancelOrder();
+            }}
+            disabled={isPending}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {isPending ? "Cancelling..." : "Yes, Cancel Order"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+// ==========================================
+// MAIN ORDER DETAILS PAGE
+// ==========================================
 export default function OrderDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams();
-  console.log("Extracted Order ID from URL:", id);
 
-  // 1. FIX: Destructure 'data' out of the TanStack hook object alongside loading states
+  // Fetching target transactional payload hooks
   const { data, isLoading, isError, error } = useGetOrderDetails(id);
+  const cancelOrderMutation = useCancelOrder();
 
-const order = data?.order;
+  const order = data?.order;
 
   // Helper formatting utility for cleaner timestamps
   const formatDate = (dateString) => {
@@ -38,7 +112,7 @@ const order = data?.order;
     });
   };
 
-  // Color mappings based on your design system and Mongoose enum states
+  // Color mappings based on design system states
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'DELIVERED': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
@@ -48,16 +122,16 @@ const order = data?.order;
     }
   };
 
-  // 2. FIX: Loading Guard Screen to prevent runtime indexing errors while fetching
+  // Loading Guard Screen
   if (isLoading) {
     return (
-      <div className="container mx-auto max-w-4xl px-4 py-32 text-center text-sm font-medium text-slate-500">
+      <div className="container mx-auto max-w-4xl px-4 py-32 text-center text-sm font-medium text-slate-500 animate-pulse">
         Loading live order receipt details...
       </div>
     );
   }
 
-  // 3. FIX: Error Guard Screen in case the order ID doesn't exist or database is offline
+  // Error Guard Screen 
   if (isError || !order) {
     return (
       <div className="container mx-auto max-w-md px-4 py-32 text-center">
@@ -76,6 +150,9 @@ const order = data?.order;
       </div>
     );
   }
+
+  // Derived Business Logic configuration state variables
+  const canCancelOrder = ["PENDING", "CONFIRMED"].includes(order.orderStatus);
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
@@ -99,12 +176,12 @@ const order = data?.order;
           {/* Order Meta Detail Card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-4 border-b bg-slate-50/50">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4|gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Order ID</p>
                   <p className="text-sm font-mono font-bold text-slate-800 break-all">{order._id}</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 self-start sm:self-center">
                   <span className={`text-xs font-semibold px-2.5 py-1 border rounded-full ${getStatusBadgeClass(order.orderStatus)}`}>
                     Order: {order.orderStatus}
                   </span>
@@ -127,7 +204,6 @@ const order = data?.order;
                 <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5 mb-2">
                   <ShoppingBag className="h-4 w-4 text-slate-500" /> Items Snapshot
                 </h3>
-                {/* FIX: Ensure parenthesis configuration handles mapping properly */}
                 {(order.items || []).map((item) => (
                   <div key={item._id} className="flex gap-4 items-center justify-between py-1">
                     <div className="flex gap-3 items-center">
@@ -196,7 +272,7 @@ const order = data?.order;
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Total Invariant Receipt Aggregations Summary */}
+        {/* RIGHT COLUMN: Total Invariant Receipt Summary */}
         <div className="md:col-span-1 space-y-4">
           <Card className="shadow-sm border-t-4 border-t-slate-900">
             <CardHeader className="pb-2">
@@ -240,6 +316,17 @@ const order = data?.order;
               <ArrowLeft className="h-4 w-4" /> View All Orders
             </Button>
           </div>
+
+          {/* Conditional Rendering of the shadcn AlertDialog Action */}
+          {canCancelOrder && (
+            <div className="pt-2">
+              <CancelOrderButton 
+                order={order} 
+                cancelOrderMutation={cancelOrderMutation} 
+                navigate={navigate} 
+              />
+            </div>
+          )}
         </div>
 
       </div>

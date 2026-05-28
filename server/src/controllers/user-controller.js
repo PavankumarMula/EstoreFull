@@ -2,8 +2,8 @@
 const User = require("../models/user-model");
 
 const createUser = async (req,res)=>{
-    const {name,email,password} = req.body;
-    if(!name || !email || !password){
+    const {name,email,password,role} = req.body;
+    if(!name || !email || !password || !role){ 
         return res.status(400).json({message:"Please provide all the required fields"});
     }
     try {
@@ -11,7 +11,7 @@ const createUser = async (req,res)=>{
         if(existingUser){
             return res.status(400).json({message:"User with this email already exists"});
         }
-        const user = new User({name,email,password});
+        const user = new User({name,email,password,role});
         await user.save();
         res.status(201).json({message:"User created successfully",user});
     } catch (error) {
@@ -23,7 +23,7 @@ const createUser = async (req,res)=>{
 // update a user patch request
 const updateUser = async (req,res)=>{
     const {id} = req.params;
-    const {name,email,password} = req.body;
+    const {name,email,password,role} = req.body;
     try {
         const user = await User.findById(id);
         if(!user){
@@ -32,6 +32,7 @@ const updateUser = async (req,res)=>{
         user.name = name || user.name;
         user.email = email || user.email;
         user.password = password || user.password;
+        user.role = role || user.role;  
         await user.save();
         res.status(200).json({message:"User updated successfully",user});
     } catch (error) {

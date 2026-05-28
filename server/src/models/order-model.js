@@ -169,10 +169,10 @@ const orderSchema =
 
             enum: [
                 "PENDING",
-                "PROCESSING",
+                "CONFIRMED",
                 "SHIPPED",
                 "DELIVERED",
-                "CANCELLED",
+                "CANCELLED"
             ],
 
             default: "PENDING",
